@@ -1,14 +1,17 @@
+let imagenEscena1;
 let ciudad;
 let personaje;
 let interfaz;
 let imgInstrucciones; // Declarada arriba
-let sueloY = 320;
+let sueloY = 280;
 
 // Máquina de estados: 2 = Instrucciones, 3 = Juego
 let estado = 2; 
 
 // ¡IMPORTANTE! El preload va SIEMPRE antes del setup
 function preload(){
+ // Cargamos el archivo que ya tenés en la carpeta img
+  imagenEscena1 = loadImage('img/escena1.png');
   // Corrección: es loadImage (con 'I' mayúscula y 'age' al final)
   imgInstrucciones = loadImage("img/instrucciones.png"); 
 }
@@ -16,7 +19,8 @@ function preload(){
 function setup() {
   createCanvas(600, 400);
   
-  ciudad = new Ciudad(sueloY);
+ // Ahora le pasamos la imagen cargada al constructor de la Ciudad
+  ciudad = new Ciudad(imagenEscena1);
   personaje = new Personaje1(sueloY);
   interfaz = new Interfaz();
 }

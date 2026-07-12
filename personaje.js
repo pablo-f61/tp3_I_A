@@ -33,9 +33,17 @@ class Personaje1 {
       this.y += this.velocidad;
     }
 
-    // --- Límites de Movimiento (Constrain) ---
-    // Limite horizontal
+  // ... Tu código actual de movimiento (teclas izquierda/derecha, gravedad, saltos) ...
+
+  // Supongamos que la altura del techo de la vereda es Y = 320. 
+  // Si el personaje está más arriba de 320 (es decir, un valor de Y menor), está en la zona del edificio:
+  if (this.y < 320) { 
+    // Choque contra el edificio: no lo dejamos pasar de 195 a la izquierda
+    this.x = constrain(this.x, 195, 585);
+  } else {
+    // Está abajo en la vereda: ¡vía libre para caminar hasta el fondo!
     this.x = constrain(this.x, 15, 585);
+  }
     
     // Límite vertical: El personaje se mueve dentro de la calle (entre 320 y 380 para no salirse abajo)
     this.y = constrain(this.y, this.sueloY, height - 20);

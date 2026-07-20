@@ -1,74 +1,136 @@
+
+
 class Personaje1 {
-  constructor(sueloY) {
-    this.x = 300; 
-    this.sueloY = sueloY; // 320
-    this.altoPersonaje = 40; 
+  constructor(x, y, imagenesNormal, imagenesAgachado, imgDisparo, imgPiso) {
+    this.x = x;
+    this.y = y; 
     
-    // Posición inicial Y: en el medio de la calle
-    this.y = this.sueloY + 20; 
+    // Guardamos todos los sets de imágenes nuevos que cargaste
+    this.imagenesNormal = imagenesNormal;
+    this.imagenesAgachado = imagenesAgachado;
+    this.imgDisparo = imgDisparo;
+    this.imgPiso = imgPiso;
     
-    this.velocidad = 4; 
-    this.radioCabeza = 10;
+    // NUEVO: El estado inicial del Chapa es NORMAL
     
-    this.vidas = 3;
-    this.vivo = true;
+    this.estado = "NORMAL"; // Puede ser: "NORMAL", "AGACHADO", "DISPARANDO", "DERROTADO"
+    this.estadoBase = "NORMAL"; // Guarda si el personaje está sano ("NORMAL") o herido ("AGACHADO")
+    this.frameActual = 0;
+    this.factorAnimacion = 0.09; 
+    this.sueloY = 460; 
+    this.direccion = 1; // Conserva el giro (1 derecha, -1 izquierda)
+    this.vivo = true; 
+
+    // Variables de física sedosa de ayer
+    this.vx = 0;             
+    this.aceleracion = 0.4;  
+    this.friccion = 0.82;    
+    this.limiteVelocidad = 3; 
   }
 
-  actualizar() {
-    if (!this.vivo) return;
-
-    // --- Movimiento Horizontal (X) ---
-    if (keyIsDown(LEFT_ARROW) || keyIsDown(65)) {
-      this.x -= this.velocidad;
-    }
-    if (keyIsDown(RIGHT_ARROW) || keyIsDown(68)) {
-      this.x += this.velocidad;
+actualizar() {
+    // Si está derrotado en el piso, se congela todo
+    if (this.estado === "DERROTADO") {
+      this.vx = 0;
+      this.frameActual = 0;
+      return;
     }
 
-    // --- Movimiento Vertical (Y) ---
-    if (keyIsDown(UP_ARROW) || keyIsDown(87)) { // Flecha Arriba o W
-      this.y -= this.velocidad;
-    }
-    if (keyIsDown(DOWN_ARROW) || keyIsDown(83)) { // Flecha Abajo o S
-      this.y += this.velocidad;
+    // --- NUEVO: CONTROL DE DISPARO CON ESPACIADORA (Código 32) ---
+    if (keyIsDown(32)) { 
+      // Si mantenés apretado espacio, se agacha y apunta
+      this.estado = "DISPARANDO";
+    } else {
+      // Si SOLTÁS espacio, vuelve a su estado base (que puede ser NORMAL o AGACHADO)
+      // Nota: Si todavía no creamos 'this.estadoBase' en tu constructor, 
+      // por ahora inicializalo en el constructor como: this.estadoBase = "NORMAL";
+      if (this.estado === "DISPARANDO") {
+        this.estado = this.estadoBase || "NORMAL"; 
+      }
     }
 
-  // ... Tu código actual de movimiento (teclas izquierda/derecha, gravedad, saltos) ...
+    // 1. CONTROL DE TECLAS PARA MOVIMIENTO (Solo si no está disparando)
+    if (this.estado !== "DISPARANDO") {
+      if (keyIsDown(RIGHT_ARROW) || keyIsDown(39)) {
+        this.vx += this.aceleracion;
+        this.direccion = 1; 
+      } else if (keyIsDown(LEFT_ARROW) || keyIsDown(37)) {
+        this.vx -= this.aceleracion;
+        this.direccion = -1; 
+      }
+    }
 
-  // Supongamos que la altura del techo de la vereda es Y = 320. 
-  // Si el personaje está más arriba de 320 (es decir, un valor de Y menor), está en la zona del edificio:
-  if (this.y < 320) { 
-    // Choque contra el edificio: no lo dejamos pasar de 195 a la izquierda
-    this.x = constrain(this.x, 195, 585);
-  } else {
-    // Está abajo en la vereda: ¡vía libre para caminar hasta el fondo!
-    this.x = constrain(this.x, 15, 585);
-  }
-    
-    // Límite vertical: El personaje se mueve dentro de la calle (entre 320 y 380 para no salirse abajo)
-    this.y = constrain(this.y, this.sueloY, height - 20);
+
+
+    // Aplicamos física de fricción
+    this.vx *= this.friccion;
+    this.vx = constrain(this.vx, -this.limiteVelocidad, this.limiteVelocidad);
+    this.x += this.vx;
+
+    // Límites de la pantalla
+    this.x = constrain(this.x, 30, 570);
+    this.y = this.sueloY; 
+
+    // 2. CONTROL DE ANIMACIÓN SEGÚN EL ESTADO
+    let velocidadActual = abs(this.vx);
+
+    if (this.estado === "NORMAL") {
+      // Camina con el set de 8 imágenes
+      if (velocidadActual > 0.15) {
+        this.frameActual += velocidadActual * this.factorAnimacion;
+        if (this.frameActual >= this.imagenesNormal.length) this.frameActual = 0;
+      } else {
+        this.frameActual = 0; 
+      }
+    } 
+    else if (this.estado === "AGACHADO") {
+      // Camina herido con tu nuevo set de 5 imágenes
+      if (velocidadActual > 0.15) {
+        this.frameActual += velocidadActual * this.factorAnimacion;
+        // Ojo acá: frena en 5 que es el largo de tus fotos caídas
+        if (this.frameActual >= this.imagenesAgachado.length) this.frameActual = 0;
+      } else {
+        this.frameActual = 0; 
+      }
+    }
+    else if (this.estado === "DISPARANDO") {
+      // Estado de un solo cuadro levantando el brazo, frena la velocidad
+      this.vx = 0;
+      this.frameActual = 0;
+    }
   }
 
   dibujar() {
     if (!this.vivo) return;
 
-    noStroke(); 
-
-    // 1. Cabeza (Relativa a this.x y this.y)
-    let centroCabezaY = this.y - 15; // La cabeza va un poco más arriba de la base Y del personaje
-    fill(250, 150, 110);
-    ellipse(this.x, centroCabezaY, this.radioCabeza * 0.9);
-
-    // 2. Cuerpo y Extremidades (Ahora TODOS los rectángulos usan this.y)
-    fill(20); 
+    let miEscala = 20; 
+    let anchoCaminante = 13 * miEscala;  
+    let altoCaminante = 10 * miEscala;  
+    let anchoCaminante1 = 20* miEscala;
+    // Preparar el dibujo con el giro intacto
+    push(); 
+    translate(this.x, this.y);
+    scale(this.direccion, 1); // ¡Acá se conserva el giro para ABSOLUTAMENTE TODOS los estados!
     
-    // Bloque Tronco Central (Antes fijo en 295, ahora acompaña a this.y)
-    rect(this.x - 4, this.y - 10, 8, 20);
+    // 3. ELEGIMOS QUÉ IMAGEN TIRARLE AL LIENZO SEGÚN EL ESTADO
+    if (this.estado === "NORMAL") {
+      let indice = floor(this.frameActual);
+      image(this.imagenesNormal[indice], -anchoCaminante / 2, -altoCaminante, anchoCaminante, altoCaminante);
+    } 
+    else if (this.estado === "AGACHADO") {
+      let indice = floor(this.frameActual);
+      image(this.imagenesAgachado[indice], -anchoCaminante / 2, -altoCaminante, anchoCaminante, altoCaminante);
+    } 
+    else if (this.estado === "DISPARANDO") {
+      image(this.imgDisparo, -anchoCaminante1 / 2, -altoCaminante, anchoCaminante1, altoCaminante);
+    } 
+    else if (this.estado === "DERROTADO") {
+      image(this.imgPiso, -anchoCaminante / 2, -altoCaminante, anchoCaminante1, altoCaminante);
+    }
     
-    // Bloque Piernas (Antes fijo en 305)
-    rect(this.x - 3, this.y, 6, 20);
-    
-    // Bloque Brazos / Detalle (Antes fijo en 299)
-    rect(this.x - 8, this.y - 6, 6, 9);
+    pop(); 
   }
 }
+
+
+

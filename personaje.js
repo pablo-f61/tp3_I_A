@@ -9,6 +9,7 @@ class Personaje1 {
     this.imgPiso = imgPiso;
     this.imgMano = imgMano;
     this.imgSentado = imgSentado;
+    this.imgPersonajeTrabajando = null; // Se asigna desde setup()
     
     this.estado = "NORMAL"; 
     this.estadoBase = "NORMAL"; 
@@ -26,7 +27,7 @@ class Personaje1 {
   }
 
   actualizar() {
-    if (this.estado === 'SENTADO' || this.estado === 'DERROTADO' || this.estado === 'MANO_ARRIBA') {
+    if (this.estado === 'SENTADO' || this.estado === 'TRABAJANDO' || this.estado === 'DERROTADO' || this.estado === 'MANO_ARRIBA') {
       this.vx = 0;
       this.frameActual = 0;
       return;
@@ -54,7 +55,7 @@ class Personaje1 {
     this.vx = constrain(this.vx, -this.limiteVelocidad, this.limiteVelocidad);
     this.x += this.vx;
 
-    this.x = constrain(this.x, 30, 570);
+    this.x = constrain(this.x, -20, 620);
     this.y = this.sueloY; 
 
     let velocidadActual = abs(this.vx);
@@ -113,7 +114,15 @@ class Personaje1 {
 
       image(this.imgSentado, (-anchoSentado / 2) + offsetX, (-altoSentado) + offsetY, anchoSentado, altoSentado);
     }
-    
+    else if (this.estado === "TRABAJANDO" && this.imgPersonajeTrabajando) {
+      let anchoTrabajando = 5 * miEscala;  
+      let altoTrabajando = 6 * miEscala;
+      let offsetX = 0;
+      let offsetY = 15;
+
+      image(this.imgPersonajeTrabajando, (-anchoTrabajando / 2) + offsetX, (-altoTrabajando) + offsetY, anchoTrabajando, altoTrabajando);
+    }
+
     pop(); 
   }
 
@@ -130,5 +139,15 @@ class Personaje1 {
 
   levantarMano() {
     this.estado = "MANO_ARRIBA";
+  }
+
+  trabajar() {
+    this.estado = "TRABAJANDO";
+    this.y = 270;
+  }
+
+  levantarseDeTrabajar() {
+    this.estado = this.estadoBase || "NORMAL";
+    this.y = this.sueloY;
   }
 }

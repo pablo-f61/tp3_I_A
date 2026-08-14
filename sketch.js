@@ -1,5 +1,5 @@
 // ⏱️ VARIABLES DE TIEMPO Y ESTADO DE JUEGO
-let tiempoTotal = 120; // 2 minutos en segundos
+let tiempoTotal = 240; // 4 minutos en segundos
 let tiempoRestante = tiempoTotal;
 let tiempoInicio;
 let juegoTerminado = false;
@@ -8,12 +8,15 @@ let juegoTerminado = false;
 let imagenEscena1;
 let ciudad;
 let casa;
+let oficina; 
+let imgOficina;
 let imgCasaInterior;
 let personaje;
 
 // Sprites del personaje
 let imgPersonajeMano;
 let imgPersonajeSentado;
+let imgPersonajeTrabajando; // Para 'senta-2.png'
 let fotoPiso;
 let fotoDisparo;
 let fotosCaminante = []; 
@@ -29,17 +32,19 @@ let sueloY = 460;
 // VARIABLES DEL JUEGO:
 let saludFinanciera = 100; 
 let deudasLiquidadas = 0;  
-let pesosDisponibles = 50; 
+let pesosDisponibles = 30; 
 
-// Máquina de estados: 2 = Instrucciones, 3 = Ciudad, 4 = Casa
+// Máquina de estados: 2 = Instrucciones, 3 = Ciudad, 4 = Casa, 5 = Oficina
 let estado = 2; 
 
 function preload() {
   imagenEscena1 = loadImage('img/escena1.png');
   imgCasaInterior = loadImage('img/casa-1.png');
   imgInstrucciones = loadImage("img/instrucciones.png");
+  imgOficina = loadImage("img/ofi-1.png");
   
   imgPersonajeMano = loadImage('img/man-1.png'); 
+  imgPersonajeTrabajando = loadImage('img/senta-2.png');
   imgPersonajeSentado = loadImage('img/sentado.png'); 
   fotoPiso = loadImage('img/piso.png');
   fotoDisparo = loadImage('img/disparo.png');
@@ -60,6 +65,7 @@ function setup() {
 
   ciudad = new Ciudad(imagenEscena1);
   casa = new Casa(imgCasaInterior);
+  oficina = new Oficina(imgOficina); 
   interfaz = new Interfaz();
   
   personaje = new Personaje1(
@@ -71,6 +77,9 @@ function setup() {
     imgPersonajeMano, 
     imgPersonajeSentado
   );
+
+  // Asignamos la imagen de la PC al personaje
+  personaje.imgPersonajeTrabajando = imgPersonajeTrabajando;
 }
 
 function iniciarJuego() {
@@ -96,11 +105,8 @@ function iniciarJuego() {
 
 function draw() {
   if (estado === 2) {
-
     // 📜 PANTALLA 2: INSTRUCCIONES
-
     background(0);
-
     if (imgInstrucciones) {
       image(imgInstrucciones, 0, 0, width, height);
     }
@@ -129,7 +135,6 @@ function draw() {
     }
 
     // Lluvia de deudas
-
     if (frameCount % 120 === 0 && personaje.estado !== "DERROTADO") {
       deudas.push(new Deuda(width));
     }
@@ -137,10 +142,9 @@ function draw() {
     for (let i = deudas.length - 1; i >= 0; i--) {
       deudas[i].actualizar();
       deudas[i].dibujar();
-
+   
       if (deudas[i].verificarColision(personaje)) {
-        saludFinanciera -= 50;
-        
+        saludFinanciera -= 10;
         if (saludFinanciera === 50) {
           personaje.estadoBase = "AGACHADO";
           personaje.estado = "AGACHADO";
@@ -174,7 +178,7 @@ function draw() {
       }
     }
 
-   // 🌆 EFECTO DE OSCURECIMIENTO PROGRESIVO
+    // 🌆 EFECTO DE OSCURECIMIENTO
     let oscuridad = map(tiempoRestante, tiempoTotal, 0, 0, 180);
     fill(0, oscuridad);
     noStroke();
@@ -182,21 +186,23 @@ function draw() {
 
     dibujarMarcadorPantalla();
 
-    if (personaje.x <= 60) {
-      estado = 4; 
-      personaje.x = 500; 
+    // Transiciones desde la Ciudad:
+    if (personaje.x <= 40) {
+      estado = 4; // A la Casa
+      personaje.x = 520; 
+    } else if (personaje.x >= 550) {
+      estado = 5; // A la Oficina
+      personaje.x = 60; 
     }
 
   } else if (estado === 4) {
+    // 🏠 PANTALLA 4: LA CASA
     background(0);
-  
     casa.dibujar();
     personaje.actualizar();
 
-  // 🛋️ DETECCIÓN DEL SILLÓN
+    // 🛋️ DETECCIÓN DEL SILLÓN
     let cercaDelSillon = (personaje.x >= 60 && personaje.x <= 280);
-  
-    // Si está cerca y parado, muestra mensaje sutil
 
     if (cercaDelSillon && personaje.estado !== "SENTADO" && personaje.estado !== "DERROTADO") {
       push();
@@ -213,7 +219,6 @@ function draw() {
       if (frameCount % 30 === 0) {
         if (saludFinanciera < 100) {
           saludFinanciera = min(100, saludFinanciera + 5);
-          
           if (saludFinanciera > 50) {
             personaje.estadoBase = "NORMAL";
           }
@@ -221,7 +226,7 @@ function draw() {
       }
     }
 
-  // 🎨 DIBUJO DEL PERSONAJE CON EL ESCALADO MANTENIDO INTACTO
+    // 🎨 DIBUJO DEL PERSONAJE DENTRO DE LA CASA
     push();
     let escala = 2.5; 
     translate(personaje.x * (1 - escala), personaje.y * (1.3 - escala));
@@ -230,7 +235,6 @@ function draw() {
     pop();
 
     // ⏱️ El tiempo sigue corriendo adentro
-
     if (!juegoTerminado) {
       let tiempoTranscurrido = floor((millis() - tiempoInicio) / 1000);
       tiempoRestante = tiempoTotal - tiempoTranscurrido;
@@ -244,17 +248,75 @@ function draw() {
       }
     }
 
-  // 🚪 SALIR DE LA CASA (Salida por la derecha)
+    dibujarMarcadorPantalla();
 
+    // 🚪 SALIDA DE LA CASA:
     if (personaje.x >= 550) {
       estado = 3;
-      personaje.x = 100;
+      personaje.x = 80;
     }
 
-  // 📊 HUD
+  } else if (estado === 5) {
+    // 🏢 PANTALLA 5: LA OFICINA
+    background(0);
+    oficina.dibujar();
+    
+    personaje.actualizar();
+
+    // 🛋️ DETECCIÓN DEL ESCRITORIO DE LA PC
+    let cercaDelEscritorio = (personaje.x >= 200 && personaje.x <= 420);
+
+    if (cercaDelEscritorio && personaje.estado !== "TRABAJANDO" && personaje.estado !== "DERROTADO") {
+      push();
+      fill(0, 255, 255);
+      stroke(0);
+      strokeWeight(2);
+      textSize(10);
+      textAlign(CENTER);
+      text("Presioná 'M' para Trabajar", personaje.x, personaje.y -82);
+      pop();
+    }
+
+  // 💰 GANAR PESOS MIENTRAS TRABAJA (Con tope de laburo)
+    let limitePesos = 50; // Podés definir el tope total de dinero que puede juntar
+
+    if (personaje.estado === "TRABAJANDO") {
+      if (pesosDisponibles < limitePesos) {
+        if (frameCount % 30 === 0) { // Suma $5 cada 1 segundo
+          pesosDisponibles += 5;
+        }
+      }
+    }
+    // 🎨 DIBUJO DEL PERSONAJE ESCALADO
+    push();
+    let escala = 3.5; 
+    translate(personaje.x * (1 - escala), personaje.y * (1.4 - escala));
+    scale(escala);
+    personaje.dibujar();
+    pop();
+
+    // ⏱️ LÓGICA DE TIEMPO
+    if (!juegoTerminado) {
+      let tiempoTranscurrido = floor((millis() - tiempoInicio) / 1000);
+      tiempoRestante = tiempoTotal - tiempoTranscurrido;
+
+      if (tiempoRestante <= 0) {
+        tiempoRestante = 0;
+        saludFinanciera = 0;
+        personaje.estado = "DERROTADO";
+        personaje.y = 500;
+        juegoTerminado = true;
+      }
+    }
+
+    // 🚪 SALIDA DE LA OFICINA:
+    if (personaje.x <= 40) {
+      estado = 3;
+      personaje.x = 520; 
+    }
 
     dibujarMarcadorPantalla();
-  }
+  }    
 }
 
 function mousePressed() {
@@ -266,10 +328,12 @@ function mousePressed() {
 }
 
 function keyPressed() {
+  // Tecla para reiniciar el juego si muere o se acaba el tiempo
   if (key === 'r' || key === 'R') {
     iniciarJuego();
   }
 
+  // --- CONTROLES EN LA CASA (estado 4) ---
   if (estado === 4) {
     if (key === 's' || key === 'S') {
       if (personaje.estado === "SENTADO") {
@@ -281,6 +345,20 @@ function keyPressed() {
     }
   }
 
+  // --- CONTROLES EN LA OFICINA (estado 5) ---
+  if (estado === 5) {
+    if ((key === 'm' || key === 'M') && personaje.estado !== "DERROTADO") {
+      if (personaje.estado === "TRABAJANDO") {
+        personaje.x = 220; 
+        personaje.levantarseDeTrabajar();
+      } else if (personaje.x >= 200 && personaje.x <= 420) {
+        personaje.x = 320; 
+        personaje.trabajar();
+      }
+    }
+  }
+
+  // --- DISPAROS EN LA CIUDAD (estado 3) ---
   if (estado === 3) {
     if (keyCode === 32 && pesosDisponibles > 0 && personaje.estado !== "DERROTADO") {
       disparos.push(new Disparo(personaje.x, personaje.y - 80));

@@ -144,8 +144,8 @@ function draw() {
       deudas[i].dibujar();
    
       if (deudas[i].verificarColision(personaje)) {
-        saludFinanciera -= 10;
-        if (saludFinanciera === 50) {
+        saludFinanciera -= 20;
+        if (saludFinanciera === 40) {
           personaje.estadoBase = "AGACHADO";
           personaje.estado = "AGACHADO";
         } else if (saludFinanciera <= 0) {

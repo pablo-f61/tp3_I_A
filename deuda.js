@@ -6,6 +6,11 @@ class Deuda {
     
     // Caen hacia abajo de manera incesante
     this.velocidadY = random(1.5, 3.5); 
+
+   if(tiempoRestante < 200){
+      this.velocidadY = random(5.5, 6.5);
+    } 
+
     this.activa = true;
 
     // Las tres palabras de la consigna al azar

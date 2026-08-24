@@ -129,7 +129,7 @@ class Personaje1 {
   sentarse() {
     this.estado = "SENTADO";
     this.x = 110; 
-    this.y = 270;
+    this.y = 280;
   }
 
   levantarse() {

@@ -362,7 +362,7 @@ function keyPressed() {
   if (estado === 3) {
     if (keyCode === 32 && pesosDisponibles > 0 && personaje.estado !== "DERROTADO") {
       disparos.push(new Disparo(personaje.x, personaje.y - 80));
-      pesosDisponibles -= 1;
+      pesosDisponibles -= 5;
     }
   }
 }

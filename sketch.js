@@ -1,5 +1,5 @@
 // ⏱️ VARIABLES DE TIEMPO Y ESTADO DE JUEGO
-let tiempoTotal = 240; // 4 minutos en segundos
+let tiempoTotal = 180; // 3 minutos en segundos
 let tiempoRestante = tiempoTotal;
 let tiempoInicio;
 let juegoTerminado = false;
@@ -34,8 +34,14 @@ let saludFinanciera = 100;
 let deudasLiquidadas = 0;  
 let pesosDisponibles = 30; 
 
-// Máquina de estados: 2 = Instrucciones, 3 = Ciudad, 4 = Casa, 5 = Oficina
-let estado = 2; 
+// Máquina de estados:
+// 2 = Instrucciones
+// 3 = Ciudad
+// 4 = Casa
+// 5 = Oficina
+// 6 = Game Over
+// 7 = Ganaste
+let estado = 2;
 
 function preload() {
   imagenEscena1 = loadImage('img/escena1.png');
@@ -126,12 +132,10 @@ function draw() {
       tiempoRestante = tiempoTotal - tiempoTranscurrido;
 
       if (tiempoRestante <= 0) {
-        tiempoRestante = 0;
-        saludFinanciera = 0;
-        personaje.estado = "DERROTADO";
-        personaje.y = 280;
-        juegoTerminado = true;
-      }
+  tiempoRestante = 0;
+  juegoTerminado = true;
+  estado = 7;
+}
     }
 
     // Lluvia de deudas
@@ -153,6 +157,7 @@ function draw() {
           personaje.estado = "DERROTADO";
           personaje.y = sueloY; 
           juegoTerminado = true;
+          estado = 6;
         }
       }
 
@@ -240,12 +245,10 @@ function draw() {
       tiempoRestante = tiempoTotal - tiempoTranscurrido;
 
       if (tiempoRestante <= 0) {
-        tiempoRestante = 0;
-        saludFinanciera = 0;
-        personaje.estado = "DERROTADO";
-        personaje.y = 500;
-        juegoTerminado = true;
-      }
+  tiempoRestante = 0;
+  juegoTerminado = true;
+  estado = 7;
+}
     }
 
     dibujarMarcadorPantalla();
@@ -300,13 +303,11 @@ function draw() {
       let tiempoTranscurrido = floor((millis() - tiempoInicio) / 1000);
       tiempoRestante = tiempoTotal - tiempoTranscurrido;
 
-      if (tiempoRestante <= 0) {
-        tiempoRestante = 0;
-        saludFinanciera = 0;
-        personaje.estado = "DERROTADO";
-        personaje.y = 500;
-        juegoTerminado = true;
-      }
+     if (tiempoRestante <= 0) {
+  tiempoRestante = 0;
+  juegoTerminado = true;
+  estado = 7;
+}
     }
 
     // 🚪 SALIDA DE LA OFICINA:
@@ -315,15 +316,41 @@ function draw() {
       personaje.x = 520; 
     }
 
-    dibujarMarcadorPantalla();
-  }    
+      dibujarMarcadorPantalla();
+
+} else if (estado === 6 || estado === 7) {
+  dibujarPantallaFinal();
+}
 }
 
 function mousePressed() {
   if (estado === 2 && interfaz.mouseSobreBoton()) {
-    cursor(ARROW); 
-    estado = 3;             
-    tiempoInicio = millis(); 
+  cursor(ARROW); 
+  iniciarJuego();
+  estado = 3;
+}
+    if (estado === 6 || estado === 7) {
+
+    // VOLVER A JUGAR
+    if (
+      mouseX >= width / 2 - 100 &&
+      mouseX <= width / 2 + 100 &&
+      mouseY >= 235 &&
+      mouseY <= 280
+    ) {
+      iniciarJuego();
+      estado = 3;
+    }
+
+    // SALIR
+    if (
+      mouseX >= width / 2 - 100 &&
+      mouseX <= width / 2 + 100 &&
+      mouseY >= 295 &&
+      mouseY <= 340
+    ) {
+      estado = 2;
+    }
   }
 }
 
@@ -392,6 +419,58 @@ function dibujarMarcadorPantalla() {
 
   fill(255, 220, 0);
   text(`TIEMPO: ${textoTiempo}`, 20, 60);
+
+  pop();
+}
+function dibujarPantallaFinal() {
+
+  background(0);
+
+  push();
+
+  textAlign(CENTER, CENTER);
+
+  if (estado === 6) {
+
+    fill(255, 30, 30);
+    textSize(42);
+    textStyle(BOLD);
+    text("GAME OVER", width / 2, 100);
+
+    fill(255);
+    textSize(15);
+    textStyle(NORMAL);
+    text("EL SISTEMA TE DEJÓ SIN NADA", width / 2, 150);
+
+  } else {
+
+    fill(0, 255, 55);
+    textSize(42);
+    textStyle(BOLD);
+    text("¡GANASTE!", width / 2, 100);
+
+    fill(255);
+    textSize(15);
+    textStyle(NORMAL);
+    text("SOBREVIVISTE AL SISTEMA", width / 2, 150);
+  }
+
+  fill(0, 255, 255);
+  textSize(13);
+  text(`DEUDAS LIQUIDADAS: ${deudasLiquidadas}`, width / 2, 190);
+
+  fill(0, 255, 55);
+  rect(width / 2 - 100, 235, 200, 45, 5);
+
+  fill(0);
+  textSize(13);
+  text("VOLVER A JUGAR", width / 2, 258);
+
+  fill(255, 30, 30);
+  rect(width / 2 - 100, 295, 200, 45, 5);
+
+  fill(255);
+  text("SALIR", width / 2, 318);
 
   pop();
 }

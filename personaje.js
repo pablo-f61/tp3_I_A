@@ -7,7 +7,6 @@ class Personaje {
     imagenesAgachado,
     imgDisparo,
     imgPiso,
-    imgMano,
     imgSentado
   ) {
 
@@ -30,9 +29,6 @@ class Personaje {
 
     this.imgPiso =
       imgPiso;
-
-    this.imgMano =
-      imgMano;
 
     this.imgSentado =
       imgSentado;
@@ -90,8 +86,7 @@ class Personaje {
     if (
       this.estado === "SENTADO" ||
       this.estado === "TRABAJANDO" ||
-      this.estado === "DERROTADO" ||
-      this.estado === "MANO_ARRIBA"
+      this.estado === "DERROTADO" 
     ) {
 
       this.vx = 0;
@@ -414,27 +409,6 @@ class Personaje {
 
 
     // ======================================================
-    // MANO ARRIBA
-    // ======================================================
-
-    else if (
-      this.estado === "MANO_ARRIBA"
-    ) {
-
-      if (this.imgMano) {
-
-        image(
-          this.imgMano,
-          -anchoCaminante / 2,
-          -altoCaminante,
-          anchoCaminante,
-          altoCaminante
-        );
-      }
-    }
-
-
-    // ======================================================
     // SENTADO
     // ======================================================
 
@@ -532,19 +506,6 @@ class Personaje {
 
     this.y =
       this.sueloY;
-  }
-
-
-  // ========================================================
-  // LEVANTAR MANO
-  // ========================================================
-
-  levantarMano() {
-
-    this.estado =
-      "MANO_ARRIBA";
-
-    this.vx = 0;
   }
 
 

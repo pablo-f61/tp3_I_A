@@ -76,7 +76,6 @@ let imgCasaInterior;
 
 let personaje;
 
-let imgPersonajeMano;
 let imgPersonajeSentado;
 let imgPersonajeTrabajando;
 
@@ -260,12 +259,7 @@ function preload() {
 
   // ----------------------------------------------------------
   // PERSONAJE
-  // ----------------------------------------------------------
-
-  imgPersonajeMano =
-    loadImage(
-      'img/man-1.png'
-    );
+  // ---------------------------------------------------------
 
 
   imgPersonajeTrabajando =
@@ -395,7 +389,6 @@ function setup() {
       fotosCaminanteCaido,
       fotoDisparo,
       fotoPiso,
-      imgPersonajeMano,
       imgPersonajeSentado
     );
 
@@ -2645,13 +2638,11 @@ text(
 
 
   fill(
-    255,
-    220,
-    0
+    255, 255, 255
   );
 
 
-  textSize(15);
+  textSize(11);
 
 
   text(
@@ -2662,11 +2653,8 @@ text(
 
 
   fill(
-    0,
-    255,
-    55
+    255
   );
-
 
   text(
     `PUNTAJE: ${puntuacion}`,
@@ -2715,7 +2703,7 @@ text(
 
 
   text(
-    "VOLVER A JUGAR",
+    "SALIR",
     width / 2,
     240
   );
@@ -3075,15 +3063,7 @@ function mousePressed() {
   // ==========================================================
   // ESTADO 9 — CRÉDITOS
   // ==========================================================
-  //
-  // Botón:
-  //
-  // X = 230 a 370
-  // Y = 350 a 390
-  //
-  // Canvas = 600 x 410
-  //
-  // ==========================================================
+
 
   if (
     estado === 9
@@ -3140,18 +3120,21 @@ function mousePressed() {
     // VOLVER A JUGAR
     // --------------------------------------------------------
 
-    if (
-      mouseX >= width / 2 - 100 &&
-      mouseX <= width / 2 + 100 &&
-      mouseY >= 220 &&
-      mouseY <= 260
-    ) {
+if (
+  mouseX >= width / 2 - 100 &&
+  mouseX <= width / 2 + 100 &&
+  mouseY >= 220 &&
+  mouseY <= 260
+) {
 
-      iniciarJuego();
+  estado = 1;
 
+  nombreJugador = "";
 
-      return;
-    }
+  crearInputNombre();
+
+  return;
+}
 
 
     // --------------------------------------------------------
@@ -3231,10 +3214,7 @@ function keyPressed() {
   // R = REINICIAR
   // ==========================================================
 
-  if (
-    key === 'r' ||
-    key === 'R'
-  ) {
+  if (key === 'r' ||key === 'R') {
 
     if (
       nombreJugador

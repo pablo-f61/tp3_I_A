@@ -96,6 +96,10 @@ let banqueroX = 400;
 
 let banqueroVelocidad = 3;
 
+let banqueroGolpeado = 0;
+
+let banqueroBalanceo = 0;
+
 let proximoAmague = 0;
 
 let banqueroLimiteIzquierdo = 50;
@@ -803,6 +807,9 @@ function actualizarTiempo() {
 
 function actualizarBanquero() {
 
+  if (banqueroGolpeado > 0) {
+  banqueroGolpeado--;
+}
   // ----------------------------------------------------------
   // MOVIMIENTO NORMAL
   // ----------------------------------------------------------
@@ -876,33 +883,56 @@ function actualizarBanquero() {
 // DIBUJAR BANQUERO
 // ============================================================
 
+
 function dibujarBanquero() {
 
   if (!imgBanquero) {
-
     return;
   }
 
-
   push();
 
+  imageMode(CORNER);
 
-  imageMode(
-    CORNER
+  let movimientoX = 0;
+  let movimientoY = 0;
+  let inclinacion = 0;
+
+  if (banqueroGolpeado > 0) {
+
+    // Tambaleo con seno
+    inclinacion =
+      sin(frameCount * 0.7) * 0.12;
+
+    movimientoX =
+      sin(frameCount * 0.9) * 3;
+
+    movimientoY =
+      sin(frameCount * 1.2) * 2;
+
+    // Color rojizo
+    tint(255, 120, 120);
+  }
+
+  // Girar desde el centro del banquero
+  translate(
+    banqueroX + 60 + movimientoX,
+    110 + movimientoY
   );
 
+  rotate(inclinacion);
 
   image(
     imgBanquero,
-    banqueroX,
-    50,
+    -60,
+    -60,
     120,
     120
   );
 
-
   pop();
 }
+
 
 
 // ============================================================
@@ -1634,6 +1664,32 @@ function actualizarCiudad() {
     disparos[k].actualizar();
 
     disparos[k].dibujar();
+
+
+
+    // --------------------------------------------------------
+    // IMPACTO CONTRA EL BANQUERO
+    // --------------------------------------------------------
+
+    if (
+      disparos[k].activo &&
+
+      disparos[k].x + disparos[k].ancho / 2 >= banqueroX &&
+      disparos[k].x - disparos[k].ancho / 2 <= banqueroX + 120 &&
+
+      disparos[k].y + disparos[k].alto / 2 >= 50 &&
+      disparos[k].y - disparos[k].alto / 2 <= 170
+    ) {
+
+      // El disparo desaparece
+      disparos[k].activo = false;
+
+      // Cambia de dirección
+      banqueroVelocidad *= -1;
+
+      // Reacción durante 30 cuadros
+      banqueroGolpeado = 30;
+    }
 
 
     for (

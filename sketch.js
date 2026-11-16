@@ -198,6 +198,8 @@ let sueloY = 460;
 
 let estado = 1;
 
+let ultimoCambioEstado = 0;
+
 let escenaActual = 3;
 
 // ----------------------------------------------------------
@@ -2365,165 +2367,23 @@ function dibujarOscurecimiento() {
 
 
 // ============================================================
-// MARCADOR EN PANTALLA
+// MARCADOR EN PANTALLA (HUD)
 // ============================================================
 
 function dibujarMarcadorPantalla() {
 
-  push();
+  if (interfaz) {
 
-
-  // ----------------------------------------------------------
-  // FONDO
-  // ----------------------------------------------------------
-
-  fill(
-    0,
-    0,
-    0,
-    160
-  );
-
-
-  noStroke();
-
-
-  rect(
-    15,
-    10,
-    175,
-    90,
-    4
-  );
-
-
-  // ----------------------------------------------------------
-  // TEXTO
-  // ----------------------------------------------------------
-
-  textSize(9);
-
-  textStyle(BOLD);
-
-  textAlign(
-    LEFT,
-    TOP
-  );
-
-
-  // ----------------------------------------------------------
-  // SALUD MENTAL
-  // ----------------------------------------------------------
-
-  fill(
-    0,
-    255,
-    255
-  );
-
-
-  text(
-    `SALUD MENTAL: ${saludMental}%`,
-    20,
-    15
-  );
-
-
-  // ----------------------------------------------------------
-  // PESOS
-  // ----------------------------------------------------------
-
-  fill(
-    0,
-    255,
-    55
-  );
-
-
-  text(
-    `PESOS: $${pesosDisponibles}`,
-    20,
-    30
-  );
-
-
-  // ----------------------------------------------------------
-  // DEUDAS
-  // ----------------------------------------------------------
-
-  fill(
-    255,
-    15,
-    250
-  );
-
-
-  text(
-    `LIQUIDADAS: ${deudasLiquidadas}`,
-    20,
-    45
-  );
-
-
-  // ----------------------------------------------------------
-  // PUNTAJE
-  // ----------------------------------------------------------
-
-  fill(
-    255,
-    150,
-    0
-  );
-
-
-  text(
-    `PUNTAJE: ${puntuacion}`,
-    20,
-    60
-  );
-
-
-  // ----------------------------------------------------------
-  // TIEMPO
-  // ----------------------------------------------------------
-
-  let minutos =
-    floor(
-      tiempoSobrevivido / 60
+    interfaz.dibujarHUD(
+      saludMental,
+      pesosDisponibles,
+      deudasLiquidadas,
+      puntuacion,
+      tiempoSobrevivido
     );
 
+  }
 
-  let segundos =
-    tiempoSobrevivido % 60;
-
-
-  let textoTiempo =
-    nf(
-      minutos,
-      2
-    ) +
-    ":" +
-    nf(
-      segundos,
-      2
-    );
-
-
-  fill(
-    255,
-    220,
-    0
-  );
-
-
-  text(
-    `VIVO: ${textoTiempo}`,
-    20,
-    75
-  );
-
-
-  pop();
 }
 
 
@@ -3145,6 +3005,8 @@ function mousePressed() {
 
       estado = 2;
 
+      ultimoCambioEstado = frameCount;
+
       return;
     }
   }
@@ -3158,7 +3020,9 @@ function mousePressed() {
     estado === 2
   ) {
 
+    // Evitamos salto involuntario por click solapado desde créditos
     if (
+      frameCount - ultimoCambioEstado > 20 &&
       interfaz.mouseSobreBoton()
     ) {
 

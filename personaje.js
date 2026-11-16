@@ -425,7 +425,7 @@ class Personaje {
           5 * miEscala;
 
         let offsetX = 0;
-        let offsetY = 25;
+        let offsetY = 15;
 
 
         image(

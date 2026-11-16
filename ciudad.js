@@ -6,7 +6,7 @@ class Ciudad {
     this.imgVelero = imagenVelero;
 
     // Posición del velero
-    this.veleroBaseX = 450;
+    this.veleroBaseX = 460;
     this.veleroBaseY = 275;
 
     // Tamaño del velero

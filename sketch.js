@@ -2386,12 +2386,18 @@ function dibujarMarcadorPantalla() {
 
   if (interfaz) {
 
+    let tiempoRestante =
+      max(
+        0,
+        tiempoLimite - tiempoSobrevivido
+      );
+
     interfaz.dibujarHUD(
       saludMental,
       pesosDisponibles,
       deudasLiquidadas,
       puntuacion,
-      tiempoSobrevivido
+      tiempoRestante
     );
 
   }

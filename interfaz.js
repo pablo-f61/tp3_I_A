@@ -106,7 +106,7 @@ class Interfaz {
     pesosDisponibles,
     deudasLiquidadas,
     puntuacion,
-    tiempoSobrevivido
+    tiempoRestante
   ) {
 
     push();
@@ -355,16 +355,22 @@ class Interfaz {
 
 
     // ------------------------------------------------------
-    // 4. TIEMPO SOBREVIVIDO
+    // 4. TIEMPO RESTANTE (CUENTA REGRESIVA)
     // ------------------------------------------------------
+
+    let segundosTotales =
+      max(
+        0,
+        floor(tiempoRestante)
+      );
 
     let minutos =
       floor(
-        tiempoSobrevivido / 60
+        segundosTotales / 60
       );
 
     let segundos =
-      tiempoSobrevivido % 60;
+      segundosTotales % 60;
 
     let textoTiempo =
       nf(minutos, 2) +
@@ -383,11 +389,31 @@ class Interfaz {
       yCentro
     );
 
-    fill(
-      242,
-      230,
-      206
-    ); // Crema marfil
+    if (segundosTotales <= 15) {
+      let parpadeo =
+        (frameCount % 30 < 15)
+          ? 255
+          : 180;
+
+      fill(
+        255,
+        59,
+        48,
+        parpadeo
+      ); // Peligro crítico con parpadeo suave
+    } else if (segundosTotales <= 30) {
+      fill(
+        255,
+        193,
+        7
+      ); // Ámbar advertencia
+    } else {
+      fill(
+        242,
+        230,
+        206
+      ); // Crema marfil
+    }
 
     text(
       textoTiempo,

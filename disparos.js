@@ -116,4 +116,39 @@ class Disparo {
 
     return false;
   }
+
+
+  // ========================================================
+  // IMPACTO CONTRA BANQUERO
+  // ========================================================
+
+  verificarImpactoBanquero() {
+    if (!this.activo) {
+      return false;
+    }
+
+    // El banquero se dibuja con imageMode(CORNER) en (banqueroX, 50) con tamaño 120x120
+    let tocoX = this.x > banqueroX && this.x < banqueroX + 120;
+    let tocoY = this.y > 50 && this.y < 50 + 120;
+
+    if (tocoX && tocoY) {
+      // Desactivamos el signo "$" para que desaparezca al chocar
+      this.activo = false;
+
+      // Reacción física: invierte dirección y pega un sacudón hacia el costado
+      banqueroVelocidad *= -1;
+      banqueroX += banqueroVelocidad * 10;
+      banqueroX = constrain(banqueroX, banqueroLimiteIzquierdo, banqueroLimiteDerecho);
+
+      // Reacción visual: activa el temblor y el tinte rojo por 15 cuadros
+      banqueroGolpeado = 15;
+
+      // Prolonga el tiempo límite en 10 segundos
+      tiempoLimite += 10;
+
+      return true;
+    }
+
+    return false;
+  }
 }

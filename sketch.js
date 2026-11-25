@@ -198,8 +198,6 @@ let sueloY = 460;
 
 let estado = 1;
 
-let ultimoCambioEstado = 0;
-
 let escenaActual = 3;
 
 // ----------------------------------------------------------
@@ -661,6 +659,8 @@ function iniciarJuego() {
   // ----------------------------------------------------------
 
   tiempoSobrevivido = 0;
+
+  tiempoLimite = 180;
 
   tiempoInicio =
     millis();
@@ -1691,6 +1691,18 @@ function actualizarCiudad() {
 
       // Reacción durante 30 cuadros
       banqueroGolpeado = 30;
+
+      // Prolonga el tiempo límite en 10 segundos
+      tiempoLimite += 10;
+
+      // Feedback visual de tiempo extra
+      crearParticula(
+        disparos[k].x,
+        disparos[k].y,
+        "+10s",
+        0,
+        -1
+      );
     }
 
 
@@ -3005,8 +3017,6 @@ function mousePressed() {
 
       estado = 2;
 
-      ultimoCambioEstado = frameCount;
-
       return;
     }
   }
@@ -3020,9 +3030,7 @@ function mousePressed() {
     estado === 2
   ) {
 
-    // Evitamos salto involuntario por click solapado desde créditos
     if (
-      frameCount - ultimoCambioEstado > 20 &&
       interfaz.mouseSobreBoton()
     ) {
 
